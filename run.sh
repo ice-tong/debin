@@ -1,5 +1,6 @@
 set -xe
 
+# EXP_NAME=mini-demo
 EXP_NAME=xenial-main-amd64
 BIN_DIR=data/${EXP_NAME}/stripped/
 DEBUG_DIR=data/${EXP_NAME}/debug/

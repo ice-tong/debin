@@ -430,3 +430,4 @@ TSWLatexianTemp*
 data
 models/*/
 stats
+cache-*

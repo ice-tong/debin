@@ -12,6 +12,8 @@ from sklearn.feature_selection import SelectKBest, chi2
 from common.config import Config
 from binary import Binary
 
+import shutil
+import hashlib
 import tqdm
 
 
@@ -52,7 +54,7 @@ def get_args():
 
 
 def generate_feature(args):
-    b, bin_dir, debug_dir, bap_dir = args
+    b, bin_dir, debug_dir, bap_dir, features_cahche_fpath = args
     try:
         config = Config()
         config.BINARY_NAME = b
@@ -62,9 +64,11 @@ def generate_feature(args):
             config.BAP_FILE_PATH = os.path.join(bap_dir, b)
         with open(config.BINARY_PATH, 'rb') as elffile, open(config.DEBUG_INFO_PATH, 'rb') as debug_elffile:
             b = Binary(config, elffile, debug_elffile)
-            return b.get_features()
+            features = b.get_features()
+        with open(features_cahche_fpath, 'wb') as f:
+            pickle.dump(features, f)
     except:
-        return [], [], [], []
+        pass
 
 
 def train(X_raw, Y_raw, num_p, num_n, num_f, n_estimators, n_jobs, name, output_dir):
@@ -118,14 +122,26 @@ def main():
     with open(args.bin_list) as f:
         bins = list(map(lambda l: l.strip('\r\n'), f.readlines()))
 
+    cache_dir = os.path.join('./cache-{}'.format(hashlib.md5(args.bin_dir.encode()).hexdigest()))
+    os.makedirs(cache_dir, exist_ok=True)
+
     with multiprocessing.Pool(args.workers) as pool:
         arguments = []
         for b in bins:
-            arguments.append((b, args.bin_dir, args.debug_dir, args.bap_dir))
+            features_cache_fpath = os.path.join(cache_dir, '{}.features.pickle'.format(b))
+            # Skip if the cache file exists.
+            if os.path.exists(features_cache_fpath):
+                continue
+            arguments.append((b, args.bin_dir, args.debug_dir, args.bap_dir, features_cache_fpath))
+
+        for _ in tqdm.tqdm(pool.imap_unordered(generate_feature, arguments), total=len(arguments)):
+            pass
 
         results = []
-        for result in tqdm.tqdm(pool.imap_unordered(generate_feature, arguments), total=len(arguments)):
-            results.append(result)
+        for cache_file in tqdm.tqdm(os.listdir(cache_dir)):
+            features_cache_fpath = os.path.join(cache_dir, cache_file)
+            with open(features_cache_fpath, 'rb') as f:
+                results.append(pickle.load(f))
 
     random.shuffle(results)
 
