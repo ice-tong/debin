@@ -12,6 +12,8 @@ from sklearn.feature_selection import SelectKBest, chi2
 from common.config import Config
 from binary import Binary
 
+import tqdm
+
 
 def get_args():
     parser = argparse.ArgumentParser('Debin to hack binaries. ' \
@@ -49,7 +51,8 @@ def get_args():
     return args
 
 
-def generate_feature(b, bin_dir, debug_dir, bap_dir):
+def generate_feature(args):
+    b, bin_dir, debug_dir, bap_dir = args
     try:
         config = Config()
         config.BINARY_NAME = b
@@ -114,12 +117,15 @@ def main():
 
     with open(args.bin_list) as f:
         bins = list(map(lambda l: l.strip('\r\n'), f.readlines()))
-    
+
     with multiprocessing.Pool(args.workers) as pool:
         arguments = []
         for b in bins:
             arguments.append((b, args.bin_dir, args.debug_dir, args.bap_dir))
-        results = pool.starmap(generate_feature, arguments)
+
+        results = []
+        for result in tqdm.tqdm(pool.imap_unordered(generate_feature, arguments), total=len(arguments)):
+            results.append(result)
 
     random.shuffle(results)
 
