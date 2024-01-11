@@ -40,8 +40,11 @@ from c.variables import make_variables
 
 from collections import OrderedDict
 
+from func_timeout import func_set_timeout
+
 
 class Binary:
+    @func_set_timeout(60*3)
     def __init__(self, config, elffile, debug_elffile=None):
         self.config = config
         self.name = self.config.BINARY_NAME
@@ -86,7 +89,24 @@ class Binary:
                     bap_result = subprocess.getoutput('bap {} --pass=loc --symbolizer=objdump'.format(self.path))
             else:
                 bap_result = subprocess.getoutput('bap {} --pass=loc --symbolizer=objdump --byteweight-sigs={}'.format(self.path, self.config.BYTEWEIGHT_SIGS_PATH))
+            
+            try:
+                # In the case that `unable to open log file: ... will continue logging to stderr ...`
+                start = bap_result.find('{')
+                end = bap_result.rfind('}') + 1
+                bap_json = json.loads(bap_result[start:end])
+            except Exception as e:
+                os.makedirs("./cache", exist_ok=True)
+                with open("./cache/{}-bap-result".format(self.name.split("/")[-1]), "w") as f:
+                    f.write(bap_result)
+                print('bap {} --pass=loc --symbolizer=objdump'.format(self.path))
+                raise e
+
             bap_json = json.loads(bap_result)
+
+            if self.config.BAP_FILE_PATH != '':
+                with open(self.config.BAP_FILE_PATH, 'w') as f:
+                    f.write(json.dumps(bap_json))
         else:
             bap_json = json.load(open(self.config.BAP_FILE_PATH))
 

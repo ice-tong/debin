@@ -1,14 +1,17 @@
 set -xe
 
-# EXP_NAME=mini-demo
-EXP_NAME=xenial-main-amd64
-BIN_DIR=data/${EXP_NAME}/stripped/
-DEBUG_DIR=data/${EXP_NAME}/debug/
-TRAIN_BIN_LIST=data/${EXP_NAME}/train.txt
-TEST_BIN_LIST=data/${EXP_NAME}/test.txt
+DATASET_NAME=xenial-main-amd64
+EXP_NAME=${DATASET_NAME}-variable-f1w-regp100w-regn200w-offp95w-offn95w
+BIN_DIR=data/${DATASET_NAME}/stripped/
+DEBUG_DIR=data/${DATASET_NAME}/debug/
+TRAIN_BIN_LIST=data/${DATASET_NAME}/train_min_demo.txt
+TEST_BIN_LIST=data/${DATASET_NAME}/test_min_demo.txt
 N2P_PORT=8600
 N2P_SLEEP=200
 NUM_WORKERS=10
+
+BAP_CACHE_DIR=bap_cache/${DATASET_NAME}/
+mkdir -p ${BAP_CACHE_DIR}
 
 # Train varibale
 variable_model=models/${EXP_NAME}/variable/
@@ -17,9 +20,14 @@ python3 py/train_variable.py \
           --bin_list ${TRAIN_BIN_LIST} \
           --bin_dir ${BIN_DIR} \
           --debug_dir ${DEBUG_DIR} \
+          --bap_dir ${BAP_CACHE_DIR} \
           --out_model ${variable_model} \
-          --reg_num_f 100 \
-          --off_num_f 100 \
+          --reg_num_f 10000 \
+          --off_num_f 10000 \
+          --reg_num_p 1000000 \
+          --reg_num_n 2000000 \
+          --off_num_p 950000 \
+          --off_num_n 950000 \
           --workers ${NUM_WORKERS}
 
 # Train CRF
@@ -30,9 +38,10 @@ mkdir -p ${crf_model_dir}
 mkdir -p ${crf_json_dir}
 
 python3 py/train_crf.py \
-          --bin_list ${TEST_BIN_LIST} \
+          --bin_list ${TRAIN_BIN_LIST} \
           --bin_dir ${BIN_DIR} \
           --debug_dir ${DEBUG_DIR} \
+          --bap_dir ${BAP_CACHE_DIR} \
           --out_model ${crf_model} \
           --n2p_train Nice2Predict/bazel-bin/n2p/training/train_json \
           --log_dir ${crf_json_dir} \
@@ -52,13 +61,14 @@ sleep ${N2P_SLEEP}
 stats_dir=stats/${EXP_NAME}/
 mkdir -p ${stats_dir}
 
-set +x
+set +xe
 echo "Start evaluating"
 while read -r line; do
     bin_name=${line}
     python3 py/evaluate.py \
          --binary ${BIN_DIR}/${bin_name} \
          --debug_info ${DEBUG_DIR}/${bin_name} \
+         --bap ${BAP_CACHE_DIR}/${bin_name} \
          --n2p_url http://localhost:${N2P_PORT} \
          --stat ${stats_dir}/${bin_name}.stat
     echo "process: ${bin_name}"
