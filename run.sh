@@ -4,10 +4,10 @@ DATASET_NAME=xenial-main-amd64
 EXP_NAME=${DATASET_NAME}-variable-f1w-regp100w-regn200w-offp95w-offn95w
 BIN_DIR=data/${DATASET_NAME}/stripped/
 DEBUG_DIR=data/${DATASET_NAME}/debug/
-TRAIN_BIN_LIST=data/${DATASET_NAME}/train_min_demo.txt
-TEST_BIN_LIST=data/${DATASET_NAME}/test_min_demo.txt
+TRAIN_BIN_LIST=data/${DATASET_NAME}/train.txt
+TEST_BIN_LIST=data/${DATASET_NAME}/test.txt
 N2P_PORT=8600
-N2P_SLEEP=200
+N2P_SLEEP=20
 NUM_WORKERS=10
 
 BAP_CACHE_DIR=bap_cache/${DATASET_NAME}/

@@ -134,7 +134,7 @@ def main():
             arguments.append((b, args.bin_dir, args.debug_dir, args.bap_dir))
 
         results = []
-        for result in tqdm.tqdm(pool.imap(generate_feature, arguments), total=len(arguments)):
+        for result in tqdm.tqdm(pool.imap_unordered(generate_feature, arguments, ), total=len(arguments)):
             results.append(result)
 
     random.shuffle(results)
