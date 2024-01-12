@@ -76,7 +76,7 @@ done < ${TEST_BIN_LIST}
 
 set -xe
 
-python3 ./show_metric.py --stat_dir ${stats_dir}
+python3 ./show_metric.py ${stats_dir}
 
 # Kill Nice2Predict server and do not kill the current process
 ps aux | grep "./Nice2Predict/bazel-bin/n2p/json_server/json_server" | grep -v grep | awk '{print $2}' | xargs kill -9

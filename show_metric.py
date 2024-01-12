@@ -5,7 +5,7 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--stat_dir', type=str, help='Path of statistics file.')
+    parser.add_argument('stat_dir', type=str, help='Path of statistics file.')
     args = parser.parse_args()
     
     p_list = []
@@ -20,9 +20,9 @@ def main():
         stat_fpath = os.path.join(args.stat_dir, stat_file)
         with open(stat_fpath) as f:
             content = f.read()
-        p = re.findall(r'precision_1p: (.*?)\n', content)[0]
-        r = re.findall(r'recall_1p: (.*?)\n', content)[0]
-        f = re.findall(r'f1_1p: (.*?)\n', content)[0]
+        p = re.findall(r'precision_name_2p: (.*?)\n', content)[0]
+        r = re.findall(r'recall_name_2p: (.*?)\n', content)[0]
+        f = re.findall(r'f1_name_2p: (.*?)\n', content)[0]
         inf = re.findall(r'name_inf: (.*?)\n', content)[0]
         correct = re.findall(r'name_correct: (.*?)\n', content)[0]
         known = re.findall(r'name_known: (.*?)\n', content)[0]
