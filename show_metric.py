@@ -11,7 +11,8 @@ def main():
     p_list = []
     r_list = []
     f_list = []
-    
+    accuracy_1p_list = []
+
     total_name_inf = 0
     total_name_known = 0
     total_name_correct = 0
@@ -32,9 +33,9 @@ def main():
         total_name_inf += int(inf)
         total_name_correct += int(correct)
         total_name_known += int(known)
-        
-        if float(f) > 0.15:
-            print(stat_file, f, correct, inf)
+
+        accuracy_1p = re.findall(r'accuracy_1p: (.*?)\n', content)[0]
+        accuracy_1p_list.append(float(accuracy_1p))
 
     print('binary-wise mean precision_name_2p:', sum(p_list)/len(p_list))
     print('binary-wise mean recall_name_2p:', sum(r_list)/len(r_list))
@@ -50,6 +51,8 @@ def main():
     print("total name known:", total_name_known)
     print("total name inf:", total_name_inf)
     print("total name correct:", total_name_correct)
+
+    print('binary-wise mean accuracy_1p:', sum(accuracy_1p_list)/len(accuracy_1p_list))
 
 
 if __name__=="__main__":

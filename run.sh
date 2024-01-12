@@ -8,7 +8,7 @@ TRAIN_BIN_LIST=data/${DATASET_NAME}/train.txt
 TEST_BIN_LIST=data/${DATASET_NAME}/test.txt
 N2P_PORT=8600
 N2P_SLEEP=20
-NUM_WORKERS=10
+NUM_WORKERS=15
 
 BAP_CACHE_DIR=bap_cache/${DATASET_NAME}/
 mkdir -p ${BAP_CACHE_DIR}
@@ -63,18 +63,15 @@ mkdir -p ${stats_dir}
 
 set +xe
 echo "Start evaluating"
-while read -r line; do
-    bin_name=${line}
-    python3 py/evaluate.py \
-         --binary ${BIN_DIR}/${bin_name} \
-         --debug_info ${DEBUG_DIR}/${bin_name} \
-         --bap ${BAP_CACHE_DIR}/${bin_name} \
-         --two_pass \
+
+cat ${TEST_BIN_LIST} | xargs -I % -P ${NUM_WORKERS} python3 py/evaluate.py \
+         --binary ${BIN_DIR}/% \
+         --debug_info ${DEBUG_DIR}/% \
+         --bap ${BAP_CACHE_DIR}/% \
+         -two_pass \
          --fp_model ${variable_model} \
          --n2p_url http://localhost:${N2P_PORT} \
-         --stat ${stats_dir}/${bin_name}.stat
-    echo "process: ${bin_name}"
-done < ${TEST_BIN_LIST}
+         --stat ${stats_dir}/%.stat
 
 set -xe
 
