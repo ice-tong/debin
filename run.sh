@@ -1,7 +1,7 @@
 set -xe
 
 DATASET_NAME=xenial-main-amd64
-EXP_NAME=${DATASET_NAME}-variable-f1w-regp100w-regn200w-offp95w-offn95w
+EXP_NAME=${DATASET_NAME}-variable-f1w-regp100w-regn200w-offp95w-offn95w-2
 BIN_DIR=data/${DATASET_NAME}/stripped/
 DEBUG_DIR=data/${DATASET_NAME}/debug/
 TRAIN_BIN_LIST=data/${DATASET_NAME}/train.txt
@@ -69,6 +69,8 @@ while read -r line; do
          --binary ${BIN_DIR}/${bin_name} \
          --debug_info ${DEBUG_DIR}/${bin_name} \
          --bap ${BAP_CACHE_DIR}/${bin_name} \
+         --two_pass \
+         --fp_model ${variable_model} \
          --n2p_url http://localhost:${N2P_PORT} \
          --stat ${stats_dir}/${bin_name}.stat
     echo "process: ${bin_name}"

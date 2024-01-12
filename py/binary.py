@@ -44,7 +44,7 @@ from func_timeout import func_set_timeout
 
 
 class Binary:
-    @func_set_timeout(60*3)
+    @func_set_timeout(60*10)
     def __init__(self, config, elffile, debug_elffile=None):
         self.config = config
         self.name = self.config.BINARY_NAME
