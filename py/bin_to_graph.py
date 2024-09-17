@@ -46,6 +46,14 @@ def main():
 
     config.GRAPH_PATH = args.graph
 
+    if os.path.exists(config.GRAPH_PATH):
+        print(args.binary, 'Graph already exists.')
+        sys.exit(0)
+
+    if args.bap != "" and not os.path.exists(args.bap):
+        print(args.binary, 'BAP-IR file does not exist, which may be cost a lot of time. Skip it.')
+        sys.exit(1)
+
     config.TWO_PASS = args.two_pass
     config.FP_MODEL_PATH = args.fp_model
     if config.TWO_PASS:

@@ -12,6 +12,8 @@ from sklearn.feature_selection import SelectKBest, chi2
 from common.config import Config
 from binary import Binary
 
+import tqdm
+
 
 def get_args():
     parser = argparse.ArgumentParser('Debin to hack binaries. ' \
@@ -49,7 +51,8 @@ def get_args():
     return args
 
 
-def generate_feature(b, bin_dir, debug_dir, bap_dir):
+def generate_feature(args):
+    b, bin_dir, debug_dir, bap_dir = args
     try:
         config = Config()
         config.BINARY_NAME = b
@@ -82,6 +85,12 @@ def train(X_raw, Y_raw, num_p, num_n, num_f, n_estimators, n_jobs, name, output_
         else:
             break
     
+    print("Training model for {}...".format(name))
+    print("Total samples:", len(X_raw))
+    print("Train samples: ", len(X))
+    print("Positive samples: ", i_p)
+    print("Negative samples: ", i_n)
+    
     X, Y = shuffle(X, Y)
 
     dict_path = os.path.join(output_dir, '{}.dict'.format(name))
@@ -108,6 +117,10 @@ def train(X_raw, Y_raw, num_p, num_n, num_f, n_estimators, n_jobs, name, output_
     with open(model_path, 'wb') as model_file:
         pickle.dump(model, model_file)
 
+    # train accuracy
+    score = model.score(X, Y)
+    print("The mean accuract on train dataset is", score)
+
 
 def main():
     args = get_args()
@@ -119,7 +132,10 @@ def main():
         arguments = []
         for b in bins:
             arguments.append((b, args.bin_dir, args.debug_dir, args.bap_dir))
-        results = pool.starmap(generate_feature, arguments)
+
+        results = []
+        for result in tqdm.tqdm(pool.imap_unordered(generate_feature, arguments, ), total=len(arguments)):
+            results.append(result)
 
     random.shuffle(results)
 

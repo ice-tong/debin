@@ -426,3 +426,11 @@ TSWLatexianTemp*
 
 # standalone packages
 *.sta
+
+data
+models/*/
+stats
+cache-*
+bap_cache
+*.zip
+Nice2Predict
